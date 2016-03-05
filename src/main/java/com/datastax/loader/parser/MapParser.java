@@ -15,6 +15,7 @@
  */
 package com.datastax.loader.parser;
 
+
 import java.lang.String;
 import java.lang.Character;
 import java.lang.StringBuilder;
@@ -26,6 +27,7 @@ import java.util.Iterator;
 import java.io.StringReader;
 import java.io.IOException;
 import java.text.ParseException;
+
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 
@@ -39,53 +41,55 @@ public class MapParser extends AbstractParser {
     private char collectionEscape = '\\';
     private char mapDelim;
     private String collectionNullString = "null";
-    private Map<Object,Object> elements;
+    private Map<Object, Object> elements;
+
     public MapParser(Parser inKeyParser, Parser inValueParser,
-		     char inCollectionDelim, char inCollectionBegin, 
-		     char inCollectionEnd, char inMapDelim) {
-	keyParser = inKeyParser;
-	valueParser = inValueParser;
-	collectionDelim = inCollectionDelim;
-	collectionBegin = inCollectionBegin;
-	collectionEnd = inCollectionEnd;
-	mapDelim = inMapDelim;
-	elements = new HashMap<Object,Object>();
+                     char inCollectionDelim, char inCollectionBegin,
+                     char inCollectionEnd, char inMapDelim) {
+        keyParser = inKeyParser;
+        valueParser = inValueParser;
+        collectionDelim = inCollectionDelim;
+        collectionBegin = inCollectionBegin;
+        collectionEnd = inCollectionEnd;
+        mapDelim = inMapDelim;
+        elements = new HashMap<Object, Object>();
     }
+
     public Object parse(String toparse) throws ParseException {
-	if (null == toparse)
-	    return null;
-	if (!toparse.startsWith(Character.toString(collectionBegin)))
-	    throw new ParseException("Must begin with " + collectionBegin 
-				     + "\n", 0);
-	if (!toparse.endsWith(Character.toString(collectionEnd)))
-	    throw new ParseException("Must end with " + collectionEnd 
-				     + "\n", 0);
-	toparse = toparse.substring(1, toparse.length() - 1);
-	IndexedLine sr = new IndexedLine(toparse);
-	String parseit;
-	elements.clear();
-	try {
-	    while (null != (parseit = getQuotedOrUnquoted(sr, 
-							  collectionNullString,
-							  collectionDelim,
-							  collectionEscape,
-							  collectionQuote))) {
-		IndexedLine innerSr = new IndexedLine(parseit);
-		Object key = keyParser.parse(innerSr, collectionNullString, 
-					     mapDelim, collectionEscape, 
-					     collectionQuote, false);
-		Object value = valueParser.parse(innerSr, collectionNullString, 
-						 mapDelim, collectionEscape, 
-						 collectionQuote, true);
-		//System.err.println("key = " + key + "  value = " + value + "  remaining=" + rem);
-		elements.put(key, value);
-	    }
-	}
-	catch (IOException ioe) {
-	    System.err.println("Trouble parsing : " + ioe.getMessage());
-	    return null;
-	}
-	return elements;
+        if (null == toparse)
+            return null;
+        if (!toparse.startsWith(Character.toString(collectionBegin)))
+            throw new ParseException("Must begin with " + collectionBegin
+                    + "\n", 0);
+        if (!toparse.endsWith(Character.toString(collectionEnd)))
+            throw new ParseException("Must end with " + collectionEnd
+                    + "\n", 0);
+        toparse = toparse.substring(1, toparse.length() - 1);
+        IndexedLine sr = new IndexedLine(toparse);
+        String parseit;
+        elements.clear();
+        try {
+            while(null != (parseit = getQuotedOrUnquoted(sr,
+                    collectionNullString,
+                    collectionDelim,
+                    collectionEscape,
+                    collectionQuote))) {
+                IndexedLine innerSr = new IndexedLine(parseit);
+                Object key = keyParser.parse(innerSr, collectionNullString,
+                        mapDelim, collectionEscape,
+                        collectionQuote, false);
+                Object value = valueParser.parse(innerSr, collectionNullString,
+                        mapDelim, collectionEscape,
+                        collectionQuote, true);
+                //System.err.println("key = " + key + "  value = " + value + "  remaining=" + rem);
+                elements.put(key, value);
+            }
+        }
+        catch(IOException ioe) {
+            System.err.println("Trouble parsing : " + ioe.getMessage());
+            return null;
+        }
+        return elements;
     }
 
     //public String format(Row row, int index) {
@@ -94,27 +98,27 @@ public class MapParser extends AbstractParser {
     //  Map<Object,Object> map = row.getMap(index, Object.class, Object.class);
     @SuppressWarnings("unchecked")
     public String format(Object o) {
-	Map<Object,Object> map = (Map<Object,Object>)o;
-	Iterator<Map.Entry<Object,Object> > iter = map.entrySet().iterator();
-	Map.Entry<Object,Object> me;
+        Map<Object, Object> map = (Map<Object, Object>) o;
+        Iterator<Map.Entry<Object, Object>> iter = map.entrySet().iterator();
+        Map.Entry<Object, Object> me;
         StringBuilder sb = new StringBuilder();
-	sb.append("\"");
-	sb.append(collectionBegin);
-	if (iter.hasNext()) {
-	    me = iter.next();
-	    sb.append(keyParser.format(me.getKey()));
-	    sb.append(mapDelim);
-	    sb.append(valueParser.format(me.getValue()));
-	}
-	while (iter.hasNext()) {
-	    sb.append(collectionDelim);
-	    me = iter.next();
-	    sb.append(keyParser.format(me.getKey()));
-	    sb.append(mapDelim);
-	    sb.append(valueParser.format(me.getValue()));
-	}
-	sb.append(collectionEnd);
-	sb.append("\"");
-	return sb.toString();
+        sb.append("\"");
+        sb.append(collectionBegin);
+        if (iter.hasNext()) {
+            me = iter.next();
+            sb.append(keyParser.format(me.getKey()));
+            sb.append(mapDelim);
+            sb.append(valueParser.format(me.getValue()));
+        }
+        while(iter.hasNext()) {
+            sb.append(collectionDelim);
+            me = iter.next();
+            sb.append(keyParser.format(me.getKey()));
+            sb.append(mapDelim);
+            sb.append(valueParser.format(me.getValue()));
+        }
+        sb.append(collectionEnd);
+        sb.append("\"");
+        return sb.toString();
     }
 }

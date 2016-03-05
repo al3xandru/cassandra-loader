@@ -1,5 +1,6 @@
 package com.datastax.loader.futures;
 
+
 import java.lang.String;
 import java.lang.System;
 import java.util.List;
@@ -20,55 +21,57 @@ public class ActionFutureSet extends AbstractFutureManager {
     protected AtomicLong insertErrors;
     protected AtomicLong numInserted;
 
-    public ActionFutureSet(int inSize, long inQueryTimeout, 
-			   long inMaxInsertErrors, 
-			   FutureAction inFutureAction) {
-	super(inSize, inQueryTimeout, inMaxInsertErrors);
-	futureAction = inFutureAction;
-	available = new Semaphore(size, true);
-	insertErrors = new AtomicLong(0);
-	numInserted = new AtomicLong(0);
+    public ActionFutureSet(int inSize, long inQueryTimeout,
+                           long inMaxInsertErrors,
+                           FutureAction inFutureAction) {
+        super(inSize, inQueryTimeout, inMaxInsertErrors);
+        futureAction = inFutureAction;
+        available = new Semaphore(size, true);
+        insertErrors = new AtomicLong(0);
+        numInserted = new AtomicLong(0);
     }
 
     public boolean add(ResultSetFuture future, final String line) {
-	if (maxInsertErrors <= insertErrors.get())
-	    return false;
-	try {
-	    available.acquire();
-	}
-	catch (InterruptedException e) {
-	    return false;
-	}
-	Futures.addCallback(future, new FutureCallback<ResultSet>() {
-		@Override
-		public void onSuccess(ResultSet rs) {
-		    available.release();
-		    numInserted.incrementAndGet();
-		    futureAction.onSuccess(rs, line);
-		}
-		@Override
-		public void onFailure(Throwable t) {
-		    available.release();
-		    long numErrors = insertErrors.incrementAndGet();
-		    futureAction.onFailure(t, line);
-		    if (maxInsertErrors <= numErrors) {
-			futureAction.onTooManyFailures();
-		    }
-		}
-	    });
-	return true;
+        if (maxInsertErrors <= insertErrors.get())
+            return false;
+        try {
+            available.acquire();
+        }
+        catch(InterruptedException e) {
+            return false;
+        }
+        Futures.addCallback(future, new FutureCallback<ResultSet>() {
+            @Override
+            public void onSuccess(ResultSet rs) {
+                available.release();
+                numInserted.incrementAndGet();
+                futureAction.onSuccess(rs, line);
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                available.release();
+                long numErrors = insertErrors.incrementAndGet();
+                futureAction.onFailure(t, line);
+                if (maxInsertErrors <= numErrors) {
+                    futureAction.onTooManyFailures();
+                }
+            }
+        });
+        return true;
     }
 
     public boolean cleanup() {
-	try {
+        try {
             available.acquire(this.size);
-        } catch (InterruptedException e) {
-	    return false;
         }
-	return true;
+        catch(InterruptedException e) {
+            return false;
+        }
+        return true;
     }
 
     public long getNumInserted() {
-	return numInserted.get();
+        return numInserted.get();
     }
 }

@@ -15,6 +15,7 @@
  */
 package com.datastax.loader.parser;
 
+
 import java.lang.String;
 import java.util.Date;
 import java.util.Locale;
@@ -22,27 +23,29 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.lang.IndexOutOfBoundsException;
+
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 
 // Date parser - takes a format string
 public class DateParser extends AbstractParser {
     private DateFormat format;
+
     public DateParser(String inFormatString) {
-	if (null == inFormatString)
-	    format = new SimpleDateFormat();
-	else
-	    format = new SimpleDateFormat(inFormatString, Locale.ENGLISH);
+        if (null == inFormatString)
+            format = new SimpleDateFormat();
+        else
+            format = new SimpleDateFormat(inFormatString, Locale.ENGLISH);
     }
-    
+
     public Date parse(String toparse) throws ParseException {
-	if (null == toparse)
-	    return null;
-	return format.parse(toparse);
+        if (null == toparse)
+            return null;
+        return format.parse(toparse);
     }
 
     public String format(Object o) {
-	Date v = (Date)o;
-	return format.format(v);
+        Date v = (Date) o;
+        return format.format(v);
     }
 }

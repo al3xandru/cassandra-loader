@@ -15,6 +15,7 @@
  */
 package com.datastax.loader;
 
+
 import com.datastax.driver.core.JdkSSLOptions;
 import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -112,45 +113,45 @@ public class CqlDelimUnload {
     private int numThreads = 5;
 
     private String usage() {
-	StringBuilder usage = new StringBuilder("version: ").append(version).append("\n");
-	usage.append("Usage: -f <outputStem> -host <ipaddress> -schema <schema> [OPTIONS]\n");
-	usage.append("OPTIONS:\n");
+        StringBuilder usage = new StringBuilder("version: ").append(version).append("\n");
+        usage.append("Usage: -f <outputStem> -host <ipaddress> -schema <schema> [OPTIONS]\n");
+        usage.append("OPTIONS:\n");
         usage.append("  -configFile <filename>         File with configuration options\n");
-	usage.append("  -delim <delimiter>             Delimiter to use [,]\n");
-	usage.append("  -dateFormat <dateFormatString> Date format [default for Locale.ENGLISH]\n");
-	usage.append("  -nullString <nullString>       String that signifies NULL [none]\n");
-	usage.append("  -port <portNumber>             CQL Port Number [9042]\n");
-	usage.append("  -user <username>               Cassandra username [none]\n");
-	usage.append("  -pw <password>                 Password for user [none]\n");
+        usage.append("  -delim <delimiter>             Delimiter to use [,]\n");
+        usage.append("  -dateFormat <dateFormatString> Date format [default for Locale.ENGLISH]\n");
+        usage.append("  -nullString <nullString>       String that signifies NULL [none]\n");
+        usage.append("  -port <portNumber>             CQL Port Number [9042]\n");
+        usage.append("  -user <username>               Cassandra username [none]\n");
+        usage.append("  -pw <password>                 Password for user [none]\n");
         usage.append("  -ssl-truststore-path <path>    Path to SSL truststore [none]\n");
         usage.append("  -ssl-truststore-pw <pwd>       Password for SSL truststore [none]\n");
         usage.append("  -ssl-keystore-path <path>      Path to SSL keystore [none]\n");
         usage.append("  -ssl-keystore-pw <pwd>         Password for SSL keystore [none]\n");
         usage.append("  -consistencyLevel <CL>         Consistency level [LOCAL_ONE]\n");
-	usage.append("  -decimalDelim <decimalDelim>   Decimal delimiter [.] Other option is ','\n");
-	usage.append("  -boolStyle <boolStyleString>   Style for booleans [TRUE_FALSE]\n");
-	usage.append("  -numThreads <numThreads>       Number of concurrent threads to unload [5]\n");
-	usage.append("  -beginToken <tokenString>      Begin token [none]\n");
-	usage.append("  -endToken <tokenString>        End token [none]\n");
-	return usage.toString();
+        usage.append("  -decimalDelim <decimalDelim>   Decimal delimiter [.] Other option is ','\n");
+        usage.append("  -boolStyle <boolStyleString>   Style for booleans [TRUE_FALSE]\n");
+        usage.append("  -numThreads <numThreads>       Number of concurrent threads to unload [5]\n");
+        usage.append("  -beginToken <tokenString>      Begin token [none]\n");
+        usage.append("  -endToken <tokenString>        End token [none]\n");
+        return usage.toString();
     }
-    
+
     private boolean validateArgs() {
-	if (numThreads < 1) {
-	    System.err.println("Number of threads must be non-negative");
-	    return false;
-	}
-	if ((null == username) && (null != password)) {
-	    System.err.println("If you supply the password, you must supply the username");
-	    return false;
-	}
-	if ((null != username) && (null == password)) {
-	    System.err.println("If you supply the username, you must supply the password");
-	    return false;
-	}
-	if (filename.equalsIgnoreCase("stdout")) {
-	    numThreads = 1;
-	}
+        if (numThreads < 1) {
+            System.err.println("Number of threads must be non-negative");
+            return false;
+        }
+        if ((null == username) && (null != password)) {
+            System.err.println("If you supply the password, you must supply the username");
+            return false;
+        }
+        if ((null != username) && (null == password)) {
+            System.err.println("If you supply the username, you must supply the password");
+            return false;
+        }
+        if (filename.equalsIgnoreCase("stdout")) {
+            numThreads = 1;
+        }
         if ((null == truststorePath) && (null != truststorePwd)) {
             System.err.println("If you supply the ssl-truststore-pwd, you must supply the ssl-truststore-path");
             return false;
@@ -182,20 +183,20 @@ public class CqlDelimUnload {
                 return false;
             }
         }
-	if ((null != beginToken) && (null == endToken)) {
-	    System.err.println("If you supply the beginToken then you need to specify the endToken");
-	    return false;
-	}
-	if ((null == beginToken) && (null != endToken)) {
-	    System.err.println("If you supply the endToken then you need to specify the beginToken");
-	    return false;
-	}
+        if ((null != beginToken) && (null == endToken)) {
+            System.err.println("If you supply the beginToken then you need to specify the endToken");
+            return false;
+        }
+        if ((null == beginToken) && (null != endToken)) {
+            System.err.println("If you supply the endToken then you need to specify the beginToken");
+            return false;
+        }
 
-	return true;
+        return true;
     }
-    
+
     private boolean processConfigFile(String fname, Map<String, String> amap)
-        throws IOException, FileNotFoundException {
+            throws IOException, FileNotFoundException {
         File cFile = new File(fname);
         if (!cFile.isFile()) {
             System.err.println("Configuration File must be a file");
@@ -204,7 +205,7 @@ public class CqlDelimUnload {
 
         BufferedReader cReader = new BufferedReader(new FileReader(cFile));
         String line;
-        while ((line = cReader.readLine()) != null) {
+        while((line = cReader.readLine()) != null) {
             String[] fields = line.trim().split("\\s+");
             if (2 != fields.length) {
                 System.err.println("Bad line in config file: " + line);
@@ -218,83 +219,83 @@ public class CqlDelimUnload {
     }
 
     private boolean parseArgs(String[] args)
-	throws IOException, FileNotFoundException {
-	String tkey;
-	if (args.length == 0) {
-	    System.err.println("No arguments specified");
-	    return false;
-	}
-	if (0 != args.length % 2)
-	    return false;
+            throws IOException, FileNotFoundException {
+        String tkey;
+        if (args.length == 0) {
+            System.err.println("No arguments specified");
+            return false;
+        }
+        if (0 != args.length % 2)
+            return false;
 
-	Map<String, String> amap = new HashMap<String,String>();
-	for (int i = 0; i < args.length; i+=2) {
-	    amap.put(args[i], args[i+1]);
-	}
+        Map<String, String> amap = new HashMap<String, String>();
+        for(int i = 0; i < args.length; i += 2) {
+            amap.put(args[i], args[i + 1]);
+        }
 
         if (null != (tkey = amap.remove("-configFile")))
             if (!processConfigFile(tkey, amap))
                 return false;
 
-	host = amap.remove("-host");
-	if (null == host) { // host is required
-	    System.err.println("Must provide a host");
-	    return false;
-	}
+        host = amap.remove("-host");
+        if (null == host) { // host is required
+            System.err.println("Must provide a host");
+            return false;
+        }
 
-	filename = amap.remove("-f");
-	if (null == filename) { // filename is required
-	    System.err.println("Must provide an output filename stem");
-	    return false;
-	}
+        filename = amap.remove("-f");
+        if (null == filename) { // filename is required
+            System.err.println("Must provide an output filename stem");
+            return false;
+        }
 
-	cqlSchema = amap.remove("-schema");
-	if (null == cqlSchema) { // schema is required
-	    System.err.println("Must provide a schema");
-	    return false;
-	}
+        cqlSchema = amap.remove("-schema");
+        if (null == cqlSchema) { // schema is required
+            System.err.println("Must provide a schema");
+            return false;
+        }
 
-	if (null != (tkey = amap.remove("-port")))          port = Integer.parseInt(tkey);
-	if (null != (tkey = amap.remove("-user")))          username = tkey;
-	if (null != (tkey = amap.remove("-pw")))            password = tkey;
+        if (null != (tkey = amap.remove("-port"))) port = Integer.parseInt(tkey);
+        if (null != (tkey = amap.remove("-user"))) username = tkey;
+        if (null != (tkey = amap.remove("-pw"))) password = tkey;
         if (null != (tkey = amap.remove("-ssl-truststore-path"))) truststorePath = tkey;
-        if (null != (tkey = amap.remove("-ssl-truststore-pwd")))  truststorePwd =  tkey;
-        if (null != (tkey = amap.remove("-ssl-keystore-path")))   keystorePath = tkey;
-        if (null != (tkey = amap.remove("-ssl-keystore-pwd")))    keystorePwd = tkey;
+        if (null != (tkey = amap.remove("-ssl-truststore-pwd"))) truststorePwd = tkey;
+        if (null != (tkey = amap.remove("-ssl-keystore-path"))) keystorePath = tkey;
+        if (null != (tkey = amap.remove("-ssl-keystore-pwd"))) keystorePwd = tkey;
         if (null != (tkey = amap.remove("-consistencyLevel"))) consistencyLevel = ConsistencyLevel.valueOf(tkey);
-	if (null != (tkey = amap.remove("-dateFormat")))    dateFormatString = tkey;
-	if (null != (tkey = amap.remove("-nullString")))    nullString = tkey;
-	if (null != (tkey = amap.remove("-delim")))         delimiter = tkey;
-	if (null != (tkey = amap.remove("-decimalDelim"))) {
-	    if (tkey.equals(","))
-		locale = Locale.FRANCE;
-	}
-	if (null != (tkey = amap.remove("-boolStyle"))) {
-	    boolStyle = BooleanParser.getBoolStyle(tkey);
-	    if (null == boolStyle) {
-		System.err.println("Bad boolean style.  Options are: " + BooleanParser.getOptions());
-		return false;
-	    }
-	}
-	if (null != (tkey = amap.remove("-numThreads")))    numThreads = Integer.parseInt(tkey);
-	if (null != (tkey = amap.remove("-beginToken")))    beginToken = tkey;
-	if (null != (tkey = amap.remove("-endToken")))      endToken = tkey;
-	
-	if (!amap.isEmpty()) {
-	    for (String k : amap.keySet())
-		System.err.println("Unrecognized option: " + k);
-	    return false;
-	}
-	return validateArgs();
+        if (null != (tkey = amap.remove("-dateFormat"))) dateFormatString = tkey;
+        if (null != (tkey = amap.remove("-nullString"))) nullString = tkey;
+        if (null != (tkey = amap.remove("-delim"))) delimiter = tkey;
+        if (null != (tkey = amap.remove("-decimalDelim"))) {
+            if (tkey.equals(","))
+                locale = Locale.FRANCE;
+        }
+        if (null != (tkey = amap.remove("-boolStyle"))) {
+            boolStyle = BooleanParser.getBoolStyle(tkey);
+            if (null == boolStyle) {
+                System.err.println("Bad boolean style.  Options are: " + BooleanParser.getOptions());
+                return false;
+            }
+        }
+        if (null != (tkey = amap.remove("-numThreads"))) numThreads = Integer.parseInt(tkey);
+        if (null != (tkey = amap.remove("-beginToken"))) beginToken = tkey;
+        if (null != (tkey = amap.remove("-endToken"))) endToken = tkey;
+
+        if (!amap.isEmpty()) {
+            for(String k : amap.keySet())
+                System.err.println("Unrecognized option: " + k);
+            return false;
+        }
+        return validateArgs();
     }
 
     private SSLOptions createSSLContext()
-        throws KeyStoreException, FileNotFoundException, IOException, NoSuchAlgorithmException,
-               KeyManagementException, CertificateException, UnrecoverableKeyException {
+            throws KeyStoreException, FileNotFoundException, IOException, NoSuchAlgorithmException,
+            KeyManagementException, CertificateException, UnrecoverableKeyException {
         TrustManagerFactory tmf = null;
         KeyStore tks = KeyStore.getInstance("JKS");
         tks.load((InputStream) new FileInputStream(new File(truststorePath)),
-		 truststorePwd.toCharArray());
+                truststorePwd.toCharArray());
         tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(tks);
 
@@ -302,231 +303,232 @@ public class CqlDelimUnload {
         if (null != keystorePath) {
             KeyStore kks = KeyStore.getInstance("JKS");
             kks.load((InputStream) new FileInputStream(new File(keystorePath)),
-		     keystorePwd.toCharArray());
+                    keystorePwd.toCharArray());
             kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(kks, keystorePwd.toCharArray());
         }
 
         SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(kmf != null? kmf.getKeyManagers() : null,
-                        tmf != null ? tmf.getTrustManagers() : null,
-                        new SecureRandom());
+        sslContext.init(kmf != null ? kmf.getKeyManagers() : null,
+                tmf != null ? tmf.getTrustManagers() : null,
+                new SecureRandom());
 
         return JdkSSLOptions.builder().withSSLContext(sslContext).build();
     }
 
     private void setup()
-	throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException,
-               CertificateException, UnrecoverableKeyException  {
-	// Connect to Cassandra
+            throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException,
+            CertificateException, UnrecoverableKeyException {
+        // Connect to Cassandra
         PoolingOptions pOpts = new PoolingOptions();
         pOpts.setCoreConnectionsPerHost(HostDistance.LOCAL, 4);
         pOpts.setMaxConnectionsPerHost(HostDistance.LOCAL, 4);
-	Cluster.Builder clusterBuilder = Cluster.builder()
-	    .addContactPoint(host)
-	    .withPort(port)
-            .withPoolingOptions(pOpts)
-	    .withLoadBalancingPolicy(new TokenAwarePolicy( DCAwareRoundRobinPolicy.builder().build()));
-	if (null != username)
-	    clusterBuilder = clusterBuilder.withCredentials(username, password);
+        Cluster.Builder clusterBuilder = Cluster.builder()
+                .addContactPoint(host)
+                .withPort(port)
+                .withPoolingOptions(pOpts)
+                .withLoadBalancingPolicy(new TokenAwarePolicy(DCAwareRoundRobinPolicy.builder().build()));
+        if (null != username)
+            clusterBuilder = clusterBuilder.withCredentials(username, password);
         if (null != truststorePath)
             clusterBuilder = clusterBuilder.withSSL(createSSLContext());
 
-	cluster = clusterBuilder.build();
+        cluster = clusterBuilder.build();
         if (null == cluster) {
             throw new IOException("Could not create cluster");
         }
-	session = cluster.connect();
+        session = cluster.connect();
     }
 
     private void cleanup() {
-	if (null != session)
-	    session.close();
-	if (null != cluster)
-	    cluster.close();
-    }
-    
-    public boolean run(String[] args) 
-	throws IOException, ParseException, InterruptedException, ExecutionException,
-	       KeyStoreException, NoSuchAlgorithmException, KeyManagementException,
-	       CertificateException, UnrecoverableKeyException {
-	if (false == parseArgs(args)) {
-	    System.err.println("Bad arguments");
-	    System.err.println(usage());
-	    return false;
-	}
-
-	// Setup
-	setup();
-
-	PrintStream pstream = null;
-	if (1 == numThreads) {
-	    if (filename.equalsIgnoreCase("stdout")) {
-		pstream = System.out;
-	    }
-	    else {
-		pstream = new PrintStream(new BufferedOutputStream(new FileOutputStream(filename + ".0")));
-	    }
-	}
-	
-	// Launch Threads
-	ExecutorService executor;
-	long total = 0;
-	if (null != pstream) {
-	    // One file/stdin to process
-	    executor = Executors.newSingleThreadExecutor();
-	    Callable<Long> worker = new ThreadExecute(cqlSchema, delimiter, 
-						      nullString,
-						      dateFormatString, 
-						      boolStyle, locale, 
-						      pstream, 
-						      beginToken,
-						      endToken, session,
-						      consistencyLevel);
-	    Future<Long> res = executor.submit(worker);
-	    total = res.get();
-	    executor.shutdown();
-	}
-	else {
-	    List<String> beginList = new ArrayList<String>();
-	    List<String> endList = new ArrayList<String>();
-	    if (null != beginToken) {
-		BigInteger begin = new BigInteger(beginToken);
-		BigInteger end = new BigInteger(endToken);
-		BigInteger delta = end.subtract(begin).divide(new BigInteger(String.valueOf(numThreads)));
-		for (int mype = 0; mype < numThreads; mype++) {
-		    if (mype < numThreads - 1) {
-			beginList.add(begin.add(delta.multiply(new BigInteger(String.valueOf(mype)))).toString());
-			endList.add(begin.add(delta.multiply(new BigInteger(String.valueOf(mype+1)))).toString());
-		    }
-		    else {
-			beginList.add(begin.add(delta.multiply(new BigInteger(String.valueOf(numThreads-1)))).toString());
-			endList.add(end.toString());
-		    }
-		}
-	    }
-	    else {
-		// What's the right thing here?
-		// (1) Split into canonical token ranges - numThreads=numRanges
-		// (2) Split into subranges of canonical token ranges
-		//     - if numThreads < numRanges, then reset numThreads=numRanges
-		//     - let K=CEIL(numThreads/numRanges) and M=MOD(numThreads/numRanges), for the first M token ranges split into K subranges, and for the remaining ones split into K-1 subranges
-		// (?) Should there be an option for numThreads-per-range?
-		// (?) Should there be an option for numThreads=numRanges
-	    }
-
-	    executor = Executors.newFixedThreadPool(numThreads);
-	    Set<Future<Long>> results = new HashSet<Future<Long>>();
-	    for (int mype = 0; mype < numThreads; mype++) {
-		String tBeginString = beginList.get(mype);
-		String tEndString = endList.get(mype);
-		pstream = new PrintStream(new BufferedOutputStream(new FileOutputStream(filename + "." + mype)));
-		Callable<Long> worker = new ThreadExecute(cqlSchema, delimiter, 
-							  nullString,
-							  dateFormatString, 
-							  boolStyle, locale, 
-							  pstream, 
-							  tBeginString,
-							  tEndString, session,
-							  consistencyLevel);
-		results.add(executor.submit(worker));
-	    }
-	    executor.shutdown();
-	    for (Future<Long> res : results)
-		total += res.get();
-	}
-	System.err.println("Total rows retrieved: " + total);
-
-	// Cleanup
-	cleanup();
-
-	return true;
+        if (null != session)
+            session.close();
+        if (null != cluster)
+            cluster.close();
     }
 
-    public static void main(String[] args) 
-	throws IOException, ParseException, InterruptedException, ExecutionException,
-	       KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException,
-	       CertificateException, KeyManagementException  {
-	CqlDelimUnload cdu = new CqlDelimUnload();
-	boolean success = cdu.run(args);
-	if (success) {
+    public boolean run(String[] args)
+            throws IOException, ParseException, InterruptedException, ExecutionException,
+            KeyStoreException, NoSuchAlgorithmException, KeyManagementException,
+            CertificateException, UnrecoverableKeyException {
+        if (false == parseArgs(args)) {
+            System.err.println("Bad arguments");
+            System.err.println(usage());
+            return false;
+        }
+
+        // Setup
+        setup();
+
+        PrintStream pstream = null;
+        if (1 == numThreads) {
+            if (filename.equalsIgnoreCase("stdout")) {
+                pstream = System.out;
+            }
+            else {
+                pstream = new PrintStream(new BufferedOutputStream(new FileOutputStream(filename + ".0")));
+            }
+        }
+
+        // Launch Threads
+        ExecutorService executor;
+        long total = 0;
+        if (null != pstream) {
+            // One file/stdin to process
+            executor = Executors.newSingleThreadExecutor();
+            Callable<Long> worker = new ThreadExecute(cqlSchema, delimiter,
+                    nullString,
+                    dateFormatString,
+                    boolStyle, locale,
+                    pstream,
+                    beginToken,
+                    endToken, session,
+                    consistencyLevel);
+            Future<Long> res = executor.submit(worker);
+            total = res.get();
+            executor.shutdown();
+        }
+        else {
+            List<String> beginList = new ArrayList<String>();
+            List<String> endList = new ArrayList<String>();
+            if (null != beginToken) {
+                BigInteger begin = new BigInteger(beginToken);
+                BigInteger end = new BigInteger(endToken);
+                BigInteger delta = end.subtract(begin).divide(new BigInteger(String.valueOf(numThreads)));
+                for(int mype = 0; mype < numThreads; mype++) {
+                    if (mype < numThreads - 1) {
+                        beginList.add(begin.add(delta.multiply(new BigInteger(String.valueOf(mype)))).toString());
+                        endList.add(begin.add(delta.multiply(new BigInteger(String.valueOf(mype + 1)))).toString());
+                    }
+                    else {
+                        beginList.add(begin.add(delta.multiply(new BigInteger(String.valueOf(numThreads - 1)))).toString());
+                        endList.add(end.toString());
+                    }
+                }
+            }
+            else {
+                // What's the right thing here?
+                // (1) Split into canonical token ranges - numThreads=numRanges
+                // (2) Split into subranges of canonical token ranges
+                //     - if numThreads < numRanges, then reset numThreads=numRanges
+                //     - let K=CEIL(numThreads/numRanges) and M=MOD(numThreads/numRanges), for the first M token ranges split into K subranges, and for the remaining ones split into K-1 subranges
+                // (?) Should there be an option for numThreads-per-range?
+                // (?) Should there be an option for numThreads=numRanges
+            }
+
+            executor = Executors.newFixedThreadPool(numThreads);
+            Set<Future<Long>> results = new HashSet<Future<Long>>();
+            for(int mype = 0; mype < numThreads; mype++) {
+                String tBeginString = beginList.get(mype);
+                String tEndString = endList.get(mype);
+                pstream = new PrintStream(new BufferedOutputStream(new FileOutputStream(filename + "." + mype)));
+                Callable<Long> worker = new ThreadExecute(cqlSchema, delimiter,
+                        nullString,
+                        dateFormatString,
+                        boolStyle, locale,
+                        pstream,
+                        tBeginString,
+                        tEndString, session,
+                        consistencyLevel);
+                results.add(executor.submit(worker));
+            }
+            executor.shutdown();
+            for(Future<Long> res : results)
+                total += res.get();
+        }
+        System.err.println("Total rows retrieved: " + total);
+
+        // Cleanup
+        cleanup();
+
+        return true;
+    }
+
+    public static void main(String[] args)
+            throws IOException, ParseException, InterruptedException, ExecutionException,
+            KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException,
+            CertificateException, KeyManagementException {
+        CqlDelimUnload cdu = new CqlDelimUnload();
+        boolean success = cdu.run(args);
+        if (success) {
             System.exit(0);
-        } else {
+        }
+        else {
             System.exit(-1);
         }
     }
 
     class ThreadExecute implements Callable<Long> {
-	private Session session;
-	private ConsistencyLevel consistencyLevel;
-	private PreparedStatement statement;
-	private CqlDelimParser cdp;
+        private Session session;
+        private ConsistencyLevel consistencyLevel;
+        private PreparedStatement statement;
+        private CqlDelimParser cdp;
 
-	private String cqlSchema;
-	private Locale locale = null;
-	private BooleanParser.BoolStyle boolStyle = null;
-	private String nullString = null;
-	private String delimiter = null;
+        private String cqlSchema;
+        private Locale locale = null;
+        private BooleanParser.BoolStyle boolStyle = null;
+        private String nullString = null;
+        private String delimiter = null;
 
-	private PrintStream writer = null;
-	private String beginToken = null;
-	private String endToken = null;
-	private String partitionKey = null;
-	private long numRead = 0;
+        private PrintStream writer = null;
+        private String beginToken = null;
+        private String endToken = null;
+        private String partitionKey = null;
+        private long numRead = 0;
 
-	public ThreadExecute(String inCqlSchema, String inDelimiter, 
-			     String inNullString, 
-			     String inDateFormatString,
-			     BooleanParser.BoolStyle inBoolStyle, 
-			     Locale inLocale, 
-			     PrintStream inWriter,
-			     String inBeginToken, String inEndToken,
-			     Session inSession, ConsistencyLevel inConsistencyLevel) {
-	    super();
-	    cqlSchema = inCqlSchema;
-	    delimiter = inDelimiter;
-	    nullString = inNullString;
-	    dateFormatString = inDateFormatString;
-	    boolStyle = inBoolStyle;
-	    locale = inLocale;
-	    beginToken = inBeginToken;
-	    endToken = inEndToken;
-	    session = inSession;
-	    writer = inWriter;
-	    consistencyLevel = inConsistencyLevel;
-	}
+        public ThreadExecute(String inCqlSchema, String inDelimiter,
+                             String inNullString,
+                             String inDateFormatString,
+                             BooleanParser.BoolStyle inBoolStyle,
+                             Locale inLocale,
+                             PrintStream inWriter,
+                             String inBeginToken, String inEndToken,
+                             Session inSession, ConsistencyLevel inConsistencyLevel) {
+            super();
+            cqlSchema = inCqlSchema;
+            delimiter = inDelimiter;
+            nullString = inNullString;
+            dateFormatString = inDateFormatString;
+            boolStyle = inBoolStyle;
+            locale = inLocale;
+            beginToken = inBeginToken;
+            endToken = inEndToken;
+            session = inSession;
+            writer = inWriter;
+            consistencyLevel = inConsistencyLevel;
+        }
 
-	public Long call() throws IOException, ParseException {
-	    setup();
-	    numRead = execute();
-	    cleanup();
-	    return numRead;
-	}
+        public Long call() throws IOException, ParseException {
+            setup();
+            numRead = execute();
+            cleanup();
+            return numRead;
+        }
 
-	private String getPartitionKey(CqlDelimParser cdp, Session tsession) {
-	    String keyspace = cdp.getKeyspace().replace("\"", "");
-	    String table = cdp.getTable().replace("\"", "");
-		List<Row> rows = tsession.execute(select("column_name", "component_index", "type")
-									.from("system", "schema_columns")
-									.where(eq("keyspace_name", keyspace))
-									.and(eq("columnfamily_name", table))).all();
-	    if (rows.isEmpty()) {
-		System.err.println("Can't find the keyspace/table");
-		// error
-	    }
-	    
-	    int numberOfPartitionKeys = 0;
-            for (Row row : rows) {
+        private String getPartitionKey(CqlDelimParser cdp, Session tsession) {
+            String keyspace = cdp.getKeyspace().replace("\"", "");
+            String table = cdp.getTable().replace("\"", "");
+            List<Row> rows = tsession.execute(select("column_name", "component_index", "type")
+                    .from("system", "schema_columns")
+                    .where(eq("keyspace_name", keyspace))
+                    .and(eq("columnfamily_name", table))).all();
+            if (rows.isEmpty()) {
+                System.err.println("Can't find the keyspace/table");
+                // error
+            }
+
+            int numberOfPartitionKeys = 0;
+            for(Row row : rows) {
                 if (row.getString(2).equals("partition_key"))
                     numberOfPartitionKeys++;
-	    }
+            }
             if (0 == numberOfPartitionKeys) {
-		System.err.println("Can't find any partition keys");
-		// error
-	    }
+                System.err.println("Can't find any partition keys");
+                // error
+            }
 
             String[] partitionKeyArray = new String[numberOfPartitionKeys];
-            for (Row row : rows) {
+            for(Row row : rows) {
                 String type = row.getString(2);
                 String column = row.getString(0);
                 if (type.equals("partition_key")) {
@@ -534,42 +536,42 @@ public class CqlDelimUnload {
                     partitionKeyArray[componentIndex] = "\"" + column + "\"";
                 }
             }
-	    String partitionKey = partitionKeyArray[0];
-	    for (int i = 1; i < partitionKeyArray.length; i++) {
-		partitionKey = partitionKey + "," + partitionKeyArray[i];
-	    }
-	    return partitionKey;
-	}
+            String partitionKey = partitionKeyArray[0];
+            for(int i = 1; i < partitionKeyArray.length; i++) {
+                partitionKey = partitionKey + "," + partitionKeyArray[i];
+            }
+            return partitionKey;
+        }
 
-	private void setup() throws IOException, ParseException {
-	    cdp = new CqlDelimParser(cqlSchema, delimiter, nullString, 
-				     dateFormatString, 
-				     boolStyle, locale, null, session, false);
-		Select selectStmt = cdp.generateSelectNew();
-	    if (null != beginToken) {
-        String partitionKey = getPartitionKey(cdp, session);
-        selectStmt.where(gt(token(partitionKey), beginToken))
-                .and(lte(token(partitionKey), endToken));
-	    }
-		statement = session.prepare(selectStmt);
-	    statement.setConsistencyLevel(consistencyLevel);
-	}
-	
-	private void cleanup() throws IOException {
-	    writer.flush();
-	    writer.close();
-	}
+        private void setup() throws IOException, ParseException {
+            cdp = new CqlDelimParser(cqlSchema, delimiter, nullString,
+                    dateFormatString,
+                    boolStyle, locale, null, session, false);
+            Select selectStmt = cdp.generateSelectNew();
+            if (null != beginToken) {
+                String partitionKey = getPartitionKey(cdp, session);
+                selectStmt.where(gt(token(partitionKey), beginToken))
+                        .and(lte(token(partitionKey), endToken));
+            }
+            statement = session.prepare(selectStmt);
+            statement.setConsistencyLevel(consistencyLevel);
+        }
 
-	private long execute() throws IOException {
-	    BoundStatement bound = statement.bind();
-	    ResultSet rs = session.execute(bound);
-	    numRead = 0;
-	    for (Row row : rs) {
-		writer.println(cdp.format(row));
-		numRead++;
-	    }
-	    return numRead;
-	}
+        private void cleanup() throws IOException {
+            writer.flush();
+            writer.close();
+        }
+
+        private long execute() throws IOException {
+            BoundStatement bound = statement.bind();
+            ResultSet rs = session.execute(bound);
+            numRead = 0;
+            for(Row row : rs) {
+                writer.println(cdp.format(row));
+                numRead++;
+            }
+            return numRead;
+        }
     }
 }
 
