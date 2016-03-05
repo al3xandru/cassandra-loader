@@ -1,6 +1,8 @@
 build/
 .gradle/
+.idea/
 *~
 *.jar
 cassandra-loader
+cassandra-loader.iml
 
