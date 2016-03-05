@@ -16,45 +16,40 @@
 package com.datastax.loader;
 
 
-import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.InvalidTypeException;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.loader.parser.Parser;
-import com.datastax.loader.parser.DelimParser;
-import com.datastax.loader.parser.IntegerParser;
-import com.datastax.loader.parser.LongParser;
-import com.datastax.loader.parser.FloatParser;
-import com.datastax.loader.parser.DoubleParser;
-import com.datastax.loader.parser.StringParser;
-import com.datastax.loader.parser.BooleanParser;
-import com.datastax.loader.parser.UUIDParser;
 import com.datastax.loader.parser.BigDecimalParser;
 import com.datastax.loader.parser.BigIntegerParser;
+import com.datastax.loader.parser.BooleanParser;
 import com.datastax.loader.parser.ByteBufferParser;
-import com.datastax.loader.parser.InetAddressParser;
 import com.datastax.loader.parser.DateParser;
+import com.datastax.loader.parser.DelimParser;
+import com.datastax.loader.parser.DoubleParser;
+import com.datastax.loader.parser.FloatParser;
+import com.datastax.loader.parser.InetAddressParser;
+import com.datastax.loader.parser.IntegerParser;
 import com.datastax.loader.parser.ListParser;
-import com.datastax.loader.parser.SetParser;
+import com.datastax.loader.parser.LongParser;
 import com.datastax.loader.parser.MapParser;
+import com.datastax.loader.parser.Parser;
+import com.datastax.loader.parser.SetParser;
+import com.datastax.loader.parser.StringParser;
+import com.datastax.loader.parser.UUIDParser;
 
-import java.lang.String;
-import java.lang.IndexOutOfBoundsException;
-import java.lang.NumberFormatException;
 import java.text.ParseException;
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
+import java.util.Map;
 import java.util.regex.Matcher;
-
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.exceptions.InvalidTypeException;
-import com.datastax.driver.core.DataType;
+import java.util.regex.Pattern;
 
 import static com.datastax.driver.core.Metadata.quote;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
@@ -84,39 +79,30 @@ public class CqlDelimParser {
         public Parser parser;
     }
 
-    // intialize the Parsers and the parser map
+    // initialize the Parsers and the parser map
     private void initPmap(String dateFormatString, BooleanParser.BoolStyle inBoolStyle,
                           Locale inLocale, boolean bLoader) {
         pmap = new HashMap<DataType.Name, Parser>();
-        Parser integerParser = new IntegerParser(inLocale, bLoader);
         Parser longParser = new LongParser(inLocale, bLoader);
-        Parser floatParser = new FloatParser(inLocale, bLoader);
-        Parser doubleParser = new DoubleParser(inLocale, bLoader);
         Parser stringParser = new StringParser();
-        Parser booleanParser = new BooleanParser(inBoolStyle);
         Parser uuidParser = new UUIDParser();
-        Parser bigDecimalParser = new BigDecimalParser();
-        Parser bigIntegerParser = new BigIntegerParser();
-        Parser byteBufferParser = new ByteBufferParser();
-        Parser inetAddressParser = new InetAddressParser();
-        Parser dateParser = new DateParser(dateFormatString);
 
         pmap.put(DataType.Name.ASCII, stringParser);
         pmap.put(DataType.Name.BIGINT, longParser);
-        pmap.put(DataType.Name.BLOB, byteBufferParser);
-        pmap.put(DataType.Name.BOOLEAN, booleanParser);
+        pmap.put(DataType.Name.BLOB, new ByteBufferParser());
+        pmap.put(DataType.Name.BOOLEAN, new BooleanParser(inBoolStyle));
         pmap.put(DataType.Name.COUNTER, longParser);
-        pmap.put(DataType.Name.DECIMAL, bigDecimalParser);
-        pmap.put(DataType.Name.DOUBLE, doubleParser);
-        pmap.put(DataType.Name.FLOAT, floatParser);
-        pmap.put(DataType.Name.INET, inetAddressParser);
-        pmap.put(DataType.Name.INT, integerParser);
+        pmap.put(DataType.Name.DECIMAL, new BigDecimalParser());
+        pmap.put(DataType.Name.DOUBLE, new DoubleParser(inLocale, bLoader));
+        pmap.put(DataType.Name.FLOAT, new FloatParser(inLocale, bLoader));
+        pmap.put(DataType.Name.INET, new InetAddressParser());
+        pmap.put(DataType.Name.INT, new IntegerParser(inLocale, bLoader));
         pmap.put(DataType.Name.TEXT, stringParser);
-        pmap.put(DataType.Name.TIMESTAMP, dateParser);
+        pmap.put(DataType.Name.TIMESTAMP, new DateParser(dateFormatString));
         pmap.put(DataType.Name.TIMEUUID, uuidParser);
         pmap.put(DataType.Name.UUID, uuidParser);
         pmap.put(DataType.Name.VARCHAR, stringParser);
-        pmap.put(DataType.Name.VARINT, bigIntegerParser);
+        pmap.put(DataType.Name.VARINT, new BigIntegerParser());
     }
 
     // Validate the CQL schema, extract the keyspace and tablename, and process the rest of the schema
@@ -203,8 +189,9 @@ public class CqlDelimParser {
     private void createDelimParser(String delimiter, String nullString,
                                    String skipList) throws NumberFormatException {
         delimParser = new DelimParser(delimiter, nullString);
-        for(int i = 0; i < sbl.size(); i++)
-            delimParser.add(sbl.get(i).parser);
+        for(SchemaBits aSbl : sbl) {
+            delimParser.add(aSbl.parser);
+        }
         if (null != skipList) {
             for(String s : skipList.split(",")) {
                 delimParser.addSkip(Integer.parseInt(s.trim()));
@@ -213,12 +200,12 @@ public class CqlDelimParser {
     }
 
     // Convenience method to return the INSERT statement for a PreparedStatement.
-    public String generateInsert() {
+    public Insert generateInsert() {
         Insert insertStmt = QueryBuilder.insertInto(quote(keyspace), quote(tablename));
         for(SchemaBits sb : sbl) {
             insertStmt.value(quote(sb.name), bindMarker());
         }
-        return insertStmt.toString();
+        return insertStmt;
     }
 
     public Select generateSelect() {

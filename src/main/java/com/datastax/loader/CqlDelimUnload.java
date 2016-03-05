@@ -547,7 +547,7 @@ public class CqlDelimUnload {
             cdp = new CqlDelimParser(cqlSchema, delimiter, nullString,
                     dateFormatString,
                     boolStyle, locale, null, session, false);
-            Select selectStmt = cdp.generateSelectNew();
+            Select selectStmt = cdp.generateSelect();
             if (null != beginToken) {
                 String partitionKey = getPartitionKey(cdp, session);
                 selectStmt.where(gt(token(partitionKey), beginToken))
