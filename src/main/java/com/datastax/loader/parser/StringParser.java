@@ -16,15 +16,6 @@
 package com.datastax.loader.parser;
 
 
-import java.lang.String;
-import java.lang.StringBuilder;
-import java.lang.IndexOutOfBoundsException;
-import java.io.StringReader;
-import java.io.IOException;
-
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.exceptions.InvalidTypeException;
-
 // String parser - simple
 public class StringParser extends AbstractParser {
     public String parse(String toparse) {
@@ -32,7 +23,16 @@ public class StringParser extends AbstractParser {
     }
 
     public String format(Object o) {
-        String v = (String) o;
+        if (null == o) {
+            return "";
+        }
+        String v = String.valueOf(o).replace("\"", "\"\"");
+        if (Character.isSpaceChar(v.charAt(0)) || Character.isSpaceChar(v.charAt(v.length() - 1))) {
+            return '"' + v + '"';
+        }
+        if (v.indexOf(",") > -1 || v.indexOf("\n") > -1 || v.indexOf("\r") > -1) {
+            return '"' + v + '"';
+        }
         return v;
     }
 }

@@ -16,11 +16,6 @@
 package com.datastax.loader.parser;
 
 
-import java.lang.Character;
-import java.lang.String;
-import java.lang.StringBuilder;
-import java.lang.IndexOutOfBoundsException;
-import java.io.StringReader;
 import java.io.IOException;
 import java.text.ParseException;
 
@@ -49,11 +44,14 @@ public abstract class AbstractParser implements Parser {
 
     public String prepareToParse(String retstring, String nullString, Character quote) {
         if (retstring.startsWith(quote.toString())
-                && retstring.endsWith(quote.toString()))
-            //if ((quote == retstring.charAt(0))
-            //&& (quote == retstring.charAt(retstring.length() - 1)))
+                && retstring.endsWith(quote.toString())) {
             retstring = retstring.substring(1, retstring.length() - 1);
-        retstring = retstring.trim();
+            retstring = retstring.replace("\"\"", "\"");
+        }
+        else {
+            retstring = retstring.trim();
+        }
+
         if (nullString.equalsIgnoreCase(retstring))
             return null;
         return retstring;
