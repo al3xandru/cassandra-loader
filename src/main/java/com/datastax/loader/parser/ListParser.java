@@ -16,18 +16,10 @@
 package com.datastax.loader.parser;
 
 
-import java.lang.String;
-import java.lang.Character;
-import java.lang.StringBuilder;
-import java.lang.IndexOutOfBoundsException;
-import java.util.List;
-import java.util.ArrayList;
-import java.io.StringReader;
 import java.io.IOException;
 import java.text.ParseException;
-
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.exceptions.InvalidTypeException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ListParser extends AbstractParser {
     private Parser parser;
@@ -48,21 +40,26 @@ public class ListParser extends AbstractParser {
         elements = new ArrayList<Object>();
     }
 
+
+    @Override
     public Object parse(String toparse) throws ParseException {
-        if (null == toparse)
+        if (null == toparse) {
             return null;
-        if (!toparse.startsWith(Character.toString(collectionBegin)))
+        }
+        if (!toparse.startsWith(Character.toString(collectionBegin))) {
             throw new ParseException("Must begin with " + collectionBegin
                     + "\n", 0);
-        if (!toparse.endsWith(Character.toString(collectionEnd)))
+        }
+        if (!toparse.endsWith(Character.toString(collectionEnd))) {
             throw new ParseException("Must end with " + collectionEnd
                     + "\n", 0);
+        }
         toparse = toparse.substring(1, toparse.length() - 1);
         IndexedLine sr = new IndexedLine(toparse);
         String parseit;
         elements.clear();
         try {
-            while(null != (parseit = getQuotedOrUnquoted(sr,
+            while (null != (parseit = super.getQuotedOrUnquoted(sr,
                     collectionNullString,
                     collectionDelim,
                     collectionEscape,
@@ -77,10 +74,58 @@ public class ListParser extends AbstractParser {
         return elements;
     }
 
-    //public String format(Row row, int index) {
-    //	if (row.isNull(index))
-    //	    return null;
-    //	List<Object> list = row.getList(index, Object.class);
+    @Override
+    public String getQuotedOrUnquoted(IndexedLine il, String nullString, Character delim, Character escape, Character quote)
+    throws IOException, ParseException {
+        if (null == delim) {
+            return null;
+        }
+        if (!il.hasNext()) {
+            return null;
+        }
+        char c = il.getNext();
+        if (c == delim) {
+            return "";
+        }
+        if ((null != quote && c != quote) && (c != collectionBegin)) {
+            throw new ParseException("List must begin with '\"' or '[' (found '" + c + "')", 0);
+        }
+        boolean isQuoted = false;
+        StringBuilder sb = new StringBuilder(10240);
+        if (null != quote && c == quote) {
+            isQuoted = true;
+            sb.append(c);
+            if (!il.hasNext() || (collectionBegin != (c = il.getNext()))) {
+                throw new ParseException("List starts with '['", 1);
+            }
+        }
+        else if (collectionBegin != c) {
+            throw new ParseException("A list must begin with '['", 0);
+        }
+        boolean insideCol = true;
+        boolean insideQuote = false;
+        sb.append(c);
+        while (il.hasNext()) {
+            c = il.getNext();
+            if ((c == delim) && !insideQuote && !insideCol && !isQuoted) {
+                break;
+            }
+            sb.append(c);
+            if (c == collectionEnd && !insideQuote) {
+                insideCol = false;
+            }
+            if (null != quote && c == quote) {
+                if (!insideCol) {
+                    isQuoted = false;
+                }
+                else {
+                    insideQuote = !insideQuote;
+                }
+            }
+        }
+        return prepareToParse(sb.toString(), nullString, quote);
+    }
+
     @SuppressWarnings("unchecked")
     public String format(Object o) {
         List<Object> list = (List<Object>) o;

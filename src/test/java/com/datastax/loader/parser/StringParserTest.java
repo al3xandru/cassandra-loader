@@ -8,7 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author Alex Popescu
+ * @author Alex Popescu <alex@mypopescu.com>
  */
 public class StringParserTest {
     @Test
@@ -72,15 +72,4 @@ public class StringParserTest {
     }
 
 
-    private static class IgnoreParser extends AbstractParser {
-        @Override
-        public Object parse(String toparse) throws ParseException {
-            return null;
-        }
-
-        @Override
-        public String format(Object o) {
-            return "";
-        }
-    }
 }
